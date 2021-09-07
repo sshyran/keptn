@@ -7,7 +7,7 @@ gcloud --quiet config set project "${GCLOUD_PROJECT_NAME}"
 gcloud --quiet config set compute/zone "${CLOUDSDK_COMPUTE_ZONE}"
 
 echo "Creating VM Instance..."
-gcloud beta compute instances create "$VM_INSTANCE_NAME" \
+gcloud --quiet beta compute instances create "$VM_INSTANCE_NAME" \
   --zone="${CLOUDSDK_COMPUTE_ZONE}" \
   --machine-type=e2-standard-2 \
   --subnet=default \
