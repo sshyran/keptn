@@ -74,9 +74,8 @@ jobs:
 
       - name: "Execute test script"
         run: |
-          gcloud compute scp --recurse --zone=${{ env.CLOUDSDK_COMPUTE_ZONE }} ./tutorial-cmds.sh ${{ steps.gcp_vm_setup.outputs.VM_INSTANCE_NAME }}:/scripts/tutorial-cmds.sh
-          gcloud compute ssh --project=${{ secrets.GCLOUD_PROJECT_NAME }} --command "/scripts/tutorial-cmds.sh" --zone=${{ env.CLOUDSDK_COMPUTE_ZONE }} ${{ steps.gcp_vm_setup.outputs.VM_INSTANCE_NAME }}
-          ./tutorial-cmds.sh
+          gcloud compute scp --recurse --zone=${{ env.CLOUDSDK_COMPUTE_ZONE }} ./tutorial-cmds.sh ${{ steps.gcp_vm_setup.outputs.VM_INSTANCE_NAME }}:/tutorial-cmds.sh
+          gcloud compute ssh --project=${{ secrets.GCLOUD_PROJECT_NAME }} --command "/tutorial-cmds.sh" --zone=${{ env.CLOUDSDK_COMPUTE_ZONE }} ${{ steps.gcp_vm_setup.outputs.VM_INSTANCE_NAME }}
 
       - name: "Delete VM instance"
         if: always()
