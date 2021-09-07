@@ -56,7 +56,7 @@ jobs:
           project_id: ${{ secrets.GCLOUD_PROJECT_NAME }}
           service_account_key: ${{ secrets.GCLOUD_SERVICE_KEY }}
 
-      - name: "Install and start GCP VM instance"
+      - name: "Start GCP VM instance"
         env:
           GCLOUD_PROJECT_NAME: ${{ secrets.GCLOUD_PROJECT_NAME }}
           CLOUDSDK_COMPUTE_ZONE: ${{ env.CLOUDSDK_COMPUTE_ZONE }}
@@ -74,9 +74,9 @@ jobs:
 
       - name: "Execute test script"
         run: |
-          gcloud compute ssh --project=${{ secrets.GCLOUD_PROJECT_NAME }} --zone=${{ env.CLOUDSDK_COMPUTE_ZONE }} ${{ steps.gcp_vm_setup.outputs.VM_INSTANCE_NAME }}
+          gcloud compute scp --recurse --zone=${{ env.CLOUDSDK_COMPUTE_ZONE }} ./tutorial-cmds.sh ${{ steps.gcp_vm_setup.outputs.VM_INSTANCE_NAME }}:/scripts/tutorial-cmds.sh
+          gcloud compute ssh --project=${{ secrets.GCLOUD_PROJECT_NAME }} --command "/scripts/tutorial-cmds.sh" --zone=${{ env.CLOUDSDK_COMPUTE_ZONE }} ${{ steps.gcp_vm_setup.outputs.VM_INSTANCE_NAME }}
           ./tutorial-cmds.sh
-          exit
 
       - name: "Delete VM instance"
         if: always()
