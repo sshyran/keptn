@@ -74,7 +74,7 @@ jobs:
 
       - name: "Execute test script"
         run: |
-          ./tutorial-cms.sh
+          ./tutorial-cmds.sh
 
 #      - name: "Delete VM instance"
 #        if: always()
