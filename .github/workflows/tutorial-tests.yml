@@ -49,37 +49,38 @@ jobs:
           name: tutorial-cmds
           path: tutorial-cmds.sh
 
-      - name: "Set up GCloud SDK"
-        uses: google-github-actions/setup-gcloud@v0.2.1
-        with:
-          version: 355.0.0
-          project_id: ${{ secrets.GCLOUD_PROJECT_NAME }}
-          service_account_key: ${{ secrets.GCLOUD_SERVICE_KEY }}
+#      - name: "Set up GCloud SDK"
+#        uses: google-github-actions/setup-gcloud@v0.2.1
+#        with:
+#          version: 355.0.0
+#          project_id: ${{ secrets.GCLOUD_PROJECT_NAME }}
+#          service_account_key: ${{ secrets.GCLOUD_SERVICE_KEY }}
 
-      - name: "Start GCP VM instance"
-        env:
-          GCLOUD_PROJECT_NAME: ${{ secrets.GCLOUD_PROJECT_NAME }}
-          CLOUDSDK_COMPUTE_ZONE: ${{ env.CLOUDSDK_COMPUTE_ZONE }}
-          BRANCH: "master"
-          VM_INSTANCE_NAME: "gh-nightly-tutorial-runner"
-        id: gcp_vm_setup
-        run: |
-          BRANCH_SLUG=$(echo $BRANCH | iconv -t ascii//TRANSLIT | sed -r s/[^a-zA-Z0-9]+/-/g | sed -r s/^-+\|-+$//g | tr A-Z a-z)
-          export VM_INSTANCE_NAME=${VM_INSTANCE_NAME}-${BRANCH_SLUG:0:15}
-          echo "$VM_INSTANCE_NAME"
-          gcloud --quiet components update
-          ./test/utils/gcp-create-vm.sh
+#      - name: "Start GCP VM instance"
+#        env:
+#          GCLOUD_PROJECT_NAME: ${{ secrets.GCLOUD_PROJECT_NAME }}
+#          CLOUDSDK_COMPUTE_ZONE: ${{ env.CLOUDSDK_COMPUTE_ZONE }}
+#          BRANCH: "master"
+#          VM_INSTANCE_NAME: "gh-nightly-tutorial-runner"
+#        id: gcp_vm_setup
+#        run: |
+#          BRANCH_SLUG=$(echo $BRANCH | iconv -t ascii//TRANSLIT | sed -r s/[^a-zA-Z0-9]+/-/g | sed -r s/^-+\|-+$//g | tr A-Z a-z)
+#          export VM_INSTANCE_NAME=${VM_INSTANCE_NAME}-${BRANCH_SLUG:0:15}
+#          echo "$VM_INSTANCE_NAME"
+#          gcloud --quiet components update
+#          ./test/utils/gcp-create-vm.sh
 
           echo "::set-output name=VM_INSTANCE_NAME::$VM_INSTANCE_NAME"
 
       - name: "Execute test script"
         run: |
-          gcloud compute scp --recurse --zone=${{ env.CLOUDSDK_COMPUTE_ZONE }} ./tutorial-cmds.sh ${{ steps.gcp_vm_setup.outputs.VM_INSTANCE_NAME }}:/tutorial-cmds.sh
-          gcloud compute ssh --project=${{ secrets.GCLOUD_PROJECT_NAME }} --command "/tutorial-cmds.sh" --zone=${{ env.CLOUDSDK_COMPUTE_ZONE }} ${{ steps.gcp_vm_setup.outputs.VM_INSTANCE_NAME }}
+#          gcloud compute scp --recurse --zone=${{ env.CLOUDSDK_COMPUTE_ZONE }} "./tutorial-cmds.sh" ${{ steps.gcp_vm_setup.outputs.VM_INSTANCE_NAME }}:~/tutorial-cmds.sh
+#          gcloud compute ssh --project=${{ secrets.GCLOUD_PROJECT_NAME }} --command "~/tutorial-cmds.sh" --zone=${{ env.CLOUDSDK_COMPUTE_ZONE }} ${{ steps.gcp_vm_setup.outputs.VM_INSTANCE_NAME }}
+          ./tutorial-cms.sh
 
-      - name: "Delete VM instance"
-        if: always()
-        env:
-          CLOUDSDK_COMPUTE_ZONE: "us-east1-b"
-        run: |
-          gcloud --quiet compute instances delete ${{ steps.gcp_vm_setup.outputs.VM_INSTANCE_NAME }} --zone=${{ env.CLOUDSDK_COMPUTE_ZONE }}
+#      - name: "Delete VM instance"
+#        if: always()
+#        env:
+#          CLOUDSDK_COMPUTE_ZONE: "us-east1-b"
+#        run: |
+#          gcloud --quiet compute instances delete ${{ steps.gcp_vm_setup.outputs.VM_INSTANCE_NAME }} --zone=${{ env.CLOUDSDK_COMPUTE_ZONE }}
