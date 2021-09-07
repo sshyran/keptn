@@ -14,6 +14,8 @@ defaults:
     shell: bash
 env:
   GO_VERSION: 1.16
+  CLOUDSDK_COMPUTE_ZONE: "us-east1-b"
+  CLOUDSDK_REGION: "us-east1"
 jobs:
   tutorial-tests:
     runs-on: ubuntu-20.04
@@ -57,10 +59,10 @@ jobs:
       - name: "Install and start GCP VM instance"
         env:
           GCLOUD_PROJECT_NAME: ${{ secrets.GCLOUD_PROJECT_NAME }}
-          CLOUDSDK_COMPUTE_ZONE: "us-east1-b"
-          CLOUDSDK_REGION: "us-east1"
+          CLOUDSDK_COMPUTE_ZONE: ${{ env.CLOUDSDK_COMPUTE_ZONE }}
           BRANCH: "master"
           VM_INSTANCE_NAME: "gh-nightly-tutorial-runner"
+        id: gcp_vm_setup
         run: |
           BRANCH_SLUG=$(echo $BRANCH | iconv -t ascii//TRANSLIT | sed -r s/[^a-zA-Z0-9]+/-/g | sed -r s/^-+\|-+$//g | tr A-Z a-z)
           export VM_INSTANCE_NAME=${VM_INSTANCE_NAME}-${BRANCH_SLUG:0:15}
@@ -68,8 +70,17 @@ jobs:
           gcloud --quiet components update
           ./test/utils/gcp-create-vm.sh
 
-          echo "##[set-output name=CLUSTER_NAME_NIGHTLY;]$(echo ${CLUSTER_NAME_NIGHTLY})"
+          echo "::set-output name=VM_INSTANCE_NAME::$VM_INSTANCE_NAME"
 
       - name: "Execute test script"
         run: |
+          gcloud compute ssh --project=${{ secrets.GCLOUD_PROJECT_NAME }} --zone=${{ env.CLOUDSDK_COMPUTE_ZONE }} ${{ steps.gcp_vm_setup.outputs.VM_INSTANCE_NAME }}
           ./tutorial-cmds.sh
+          exit
+
+      - name: "Delete VM instance"
+        if: always()
+        env:
+          CLOUDSDK_COMPUTE_ZONE: "us-east1-b"
+        run: |
+          gcloud --quiet compute instances delete ${{ steps.gcp_vm_setup.outputs.VM_INSTANCE_NAME }} --zone=${{ env.CLOUDSDK_COMPUTE_ZONE }}
