@@ -72,6 +72,11 @@ jobs:
 #
 #          echo "::set-output name=VM_INSTANCE_NAME::$VM_INSTANCE_NAME"
 
+      - name: "Print script"
+        run: |
+          echo "Tutorial Script:"
+          echo ""
+          cat tutorial-cmds.sh
       - name: "Execute test script"
         run: |
           ./tutorial-cmds.sh
