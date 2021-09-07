@@ -69,8 +69,8 @@ jobs:
 #          echo "$VM_INSTANCE_NAME"
 #          gcloud --quiet components update
 #          ./test/utils/gcp-create-vm.sh
-
-          echo "::set-output name=VM_INSTANCE_NAME::$VM_INSTANCE_NAME"
+#
+#          echo "::set-output name=VM_INSTANCE_NAME::$VM_INSTANCE_NAME"
 
       - name: "Execute test script"
         run: |
