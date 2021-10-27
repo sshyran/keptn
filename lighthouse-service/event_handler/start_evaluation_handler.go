@@ -87,7 +87,7 @@ func (eh *StartEvaluationHandler) sendGetSliCloudEvent(keptnContext string, e *k
 		}
 		eh.KeptnHandler.Logger.Error(message)
 		return eh.sendEvaluationFinishedWithErrorEvent(evaluationStartTimestamp, evaluationEndTimestamp, e, message)
-	} else if err != nil && err == ErrSLOFileNotFound {
+	} else if err == ErrSLOFileNotFound {
 		eh.KeptnHandler.Logger.Info("no SLO file found")
 	}
 
