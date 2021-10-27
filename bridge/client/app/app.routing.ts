@@ -18,6 +18,7 @@ import { KtbCreateServiceComponent } from './_components/ktb-create-service/ktb-
 import { KtbServiceSettingsOverviewComponent } from './_components/ktb-service-settings-overview/ktb-service-settings-overview.component';
 import { KtbServiceSettingsComponent } from './_components/ktb-service-settings/ktb-service-settings.component';
 import { KtbEditServiceComponent } from './_components/ktb-edit-service/ktb-edit-service.component';
+import { ApexChartComponent } from './_components/apex-chart/apex-chart.component';
 
 const routingConfiguration: ExtraOptions = {
   paramsInheritanceStrategy: 'always',
@@ -25,6 +26,7 @@ const routingConfiguration: ExtraOptions = {
 
 const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
+  { path: 'apex-chart', component: ApexChartComponent },
   { path: 'dashboard', component: DashboardComponent },
   {
     path: 'create',

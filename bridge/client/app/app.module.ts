@@ -142,6 +142,8 @@ import {
 import { OverlayModule } from '@angular/cdk/overlay';
 import { KtbSequenceStateInfoComponent } from './_components/ktb-sequence-state-info/ktb-sequence-state-info.component';
 import { KtbPayloadViewerComponent } from './_components/ktb-payload-viewer/ktb-payload-viewer.component';
+import { NgApexchartsModule } from 'ng-apexcharts';
+import { ApexChartComponent } from './_components/apex-chart/apex-chart.component';
 
 registerLocaleData(localeEn, 'en');
 
@@ -229,6 +231,7 @@ export function init_app(appLoadService: AppInitService): () => Promise<unknown>
     KtbTreeListSelectDirective,
     KtbSequenceStateInfoComponent,
     KtbPayloadViewerComponent,
+    ApexChartComponent,
   ],
   imports: [
     BrowserModule,
@@ -282,6 +285,7 @@ export function init_app(appLoadService: AppInitService): () => Promise<unknown>
     DtAlertModule,
     DtTreeTableModule,
     OverlayModule,
+    NgApexchartsModule,
   ],
   entryComponents: [KtbDeletionDialogComponent, KtbConfirmationDialogComponent],
   providers: [
