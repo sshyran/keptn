@@ -144,6 +144,8 @@ import { KtbSequenceStateInfoComponent } from './_components/ktb-sequence-state-
 import { KtbPayloadViewerComponent } from './_components/ktb-payload-viewer/ktb-payload-viewer.component';
 import { NgApexchartsModule } from 'ng-apexcharts';
 import { ApexChartComponent } from './_components/apex-chart/apex-chart.component';
+import { KtbChartMatrixComponent } from './_components/ktb-chart-matrix/ktb-chart-matrix.component';
+import { KtbD3Component } from './_components/ktb-d3/ktb-d3.component';
 
 registerLocaleData(localeEn, 'en');
 
@@ -232,6 +234,8 @@ export function init_app(appLoadService: AppInitService): () => Promise<unknown>
     KtbSequenceStateInfoComponent,
     KtbPayloadViewerComponent,
     ApexChartComponent,
+    KtbChartMatrixComponent,
+    KtbD3Component,
   ],
   imports: [
     BrowserModule,
