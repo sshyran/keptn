@@ -272,39 +272,42 @@ jobs:
     strategy:
       matrix: ${{ fromJson(needs.prepare_ci_run.outputs.BUILD_MATRIX) }}
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v2.4.0
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
-        with:
-          install: true
-
-      - name: Build ${{ matrix.config.artifact }} test image
-        if: ((needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.should-run == 'true'))
-        uses: docker/build-push-action@v2
-        with:
-          context: ${{ matrix.config.working-dir }}
-          tags: ${{ matrix.config.artifact }}-test-${{ github.sha }}
-          target: ${{ matrix.config.docker-test-target }}
-          load: true
-          push: false
-
-      - name: Test ${{ matrix.config.artifact }}
-        if: ((needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.should-run == 'true'))
-        env:
-          IMAGE_NAME: ${{ matrix.config.artifact }}-test-${{ github.sha }}
+      - name: Dummy
         run: |
-          docker run --rm -v "$PWD/shared:/shared" $IMAGE_NAME
-
-      - name: Report test coverage for ${{ matrix.config.artifact }}
-        if: ((needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.should-run == 'true'))
-        uses: codecov/codecov-action@v2
-        with:
-          fail_ci_if_error: false
-          verbose: true
-          move_coverage_to_trash: true
-          flags: ${{ matrix.config.artifact }}
+          echo "Dummy"
+#      - name: Checkout Code
+#        uses: actions/checkout@v2.4.0
+#
+#      - name: Set up Docker Buildx
+#        uses: docker/setup-buildx-action@v1
+#        with:
+#          install: true
+#
+#      - name: Build ${{ matrix.config.artifact }} test image
+#        if: ((needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.should-run == 'true'))
+#        uses: docker/build-push-action@v2
+#        with:
+#          context: ${{ matrix.config.working-dir }}
+#          tags: ${{ matrix.config.artifact }}-test-${{ github.sha }}
+#          target: ${{ matrix.config.docker-test-target }}
+#          load: true
+#          push: false
+#
+#      - name: Test ${{ matrix.config.artifact }}
+#        if: ((needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.should-run == 'true'))
+#        env:
+#          IMAGE_NAME: ${{ matrix.config.artifact }}-test-${{ github.sha }}
+#        run: |
+#          docker run --rm -v "$PWD/shared:/shared" $IMAGE_NAME
+#
+#      - name: Report test coverage for ${{ matrix.config.artifact }}
+#        if: ((needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.should-run == 'true'))
+#        uses: codecov/codecov-action@v2
+#        with:
+#          fail_ci_if_error: false
+#          verbose: true
+#          move_coverage_to_trash: true
+#          flags: ${{ matrix.config.artifact }}
 
   unit-tests-cli:
     name: Unit Tests CLI (multi OS/arch)
@@ -347,7 +350,7 @@ jobs:
     name: Build Keptn CLI
     needs: [prepare_ci_run, unit-tests-cli]
     if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_CLI == 'true')
-    uses: keptn/keptn/.github/workflows/build-cli.yml@master
+    uses: keptn/keptn/.github/workflows/build-cli.yml@chore/release-automation
     with:
       branch: ${{ needs.prepare_ci_run.outputs.BRANCH }}
       version: ${{ needs.prepare_ci_run.outputs.VERSION }}
@@ -356,11 +359,11 @@ jobs:
   ############################################################################
   # Build Helm Charts (only relevant for build_everything)                   #
   ############################################################################
-  helm_charts_build:
+  helm-charts-build:
     name: Build Helm Charts
     needs: prepare_ci_run
     if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_INSTALLER == 'true')
-    uses: keptn/keptn/.github/workflows/build-helm-charts.yml@master
+    uses: keptn/keptn/.github/workflows/build-helm-charts.yml@chore/release-automation
     with:
       branch: ${{ needs.prepare_ci_run.outputs.BRANCH }}
       version: ${{ needs.prepare_ci_run.outputs.VERSION }}
@@ -370,45 +373,21 @@ jobs:
   ############################################################################
   # Build Docker Images                                                      #
   ############################################################################
-  docker_build:
+
+  docker-build:
     name: Docker Build
     needs: [prepare_ci_run, unit-tests-microservices]
-    runs-on: ubuntu-20.04
     if: needs.prepare_ci_run.outputs.BUILD_MATRIX_EMPTY == 'false'
-    strategy:
-      matrix: ${{ fromJson(needs.prepare_ci_run.outputs.BUILD_MATRIX) }}
-    env:
-      BRANCH: ${{ needs.prepare_ci_run.outputs.BRANCH }}
-      VERSION: ${{ needs.prepare_ci_run.outputs.VERSION }}
-      DATETIME: ${{ needs.prepare_ci_run.outputs.DATE }}${{ needs.prepare_ci_run.outputs.TIME }}
-      GIT_SHA: ${{ needs.prepare_ci_run.outputs.GIT_SHA }}
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v2.4.0
+    uses: keptn/keptn/.github/workflows/build-docker-images.yml@chore/release-automation
+    with:
+#      version: ${{ needs.prepare_ci_run.outputs.VERSION }}
+#      datetime: ${{ needs.prepare_ci_run.outputs.DATE }}${{ needs.prepare_ci_run.outputs.TIME }}
+#      build-everything: ${{ needs.prepare_ci_run.outputs.BUILD_EVERYTHING }}
+      matrix: ${{ needs.prepare_ci_run.outputs.BUILD_MATRIX }}
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
-
-      - name: Login to Docker Hub
-        uses: docker/login-action@v1
-        # only run docker login on pushes; also for PRs, but only if this is not a fork
-        if: matrix.config.should-push-image == 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository)
-        # note: GH does not allow to access secrets for PRs from a forked repositories due to security reasons
-        # that's fine, but it means we can't push images to dockerhub
-        with:
-          username: ${{ secrets.REGISTRY_USER }}
-          password: ${{ secrets.REGISTRY_PASSWORD }}
-
-      - id: docker_build_image
-        name: "Docker Build keptn/${{ matrix.config.artifact }}"
-        if: matrix.config.should-push-image == 'true' && ( matrix.config.should-run == 'true' || ( needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true' && needs.prepare_ci_run.outputs.LAST_SUCCESSFUL_RUN_ID == 'null' ) )
-        uses: docker/build-push-action@v2
-        with:
-          context: ${{ matrix.config.working-dir }}
-          tags: |
-            keptn/${{ matrix.config.artifact }}:${{ env.VERSION }}
-            keptn/${{ matrix.config.artifact }}:${{ env.VERSION }}.${{ env.DATETIME }}
-          build-args: |
-            version=${{ env.VERSION }}
-          push: ${{ matrix.config.should-push-image }}
-          pull: true
+  call-workflow:
+    needs: [docker-build]
+    uses: keptn/keptn/.github/workflows/called.yml@chore/release-automation
+    with:
+      matrix: ${{ needs.prepare_ci_run.outputs.BUILD_MATRIX }}
+      some-other-input: "test"

@@ -1,0 +1,24 @@
+name: Reusable workflow example
+on:
+  workflow_call:
+    inputs:
+      matrix:
+        type: string
+        required: true
+      some-other-input:
+        type: string
+        required: true
+
+jobs:
+  example_job:
+    name: Pass input and secrets to my-action
+    runs-on: ubuntu-latest
+    strategy:
+      matrix: ${{ fromJson(inputs.matrix) }}
+    steps:
+      - name: Print input
+        env:
+          string: ${{ matrix.config.artifact }}
+        run: |
+          echo "$string"
+          echo ${{ inputs.some-other-input }}

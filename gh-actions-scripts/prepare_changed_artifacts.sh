@@ -82,9 +82,9 @@ for changed_file in $CHANGED_FILES; do
     should_push_image="${artifact}_SHOULD_PUSH_IMAGE"
 
     if [ "${!should_push_image}" != "false" ]; then
-      should_push_image="true"
+      should_push_image=true
     else
-      should_push_image="false"
+      should_push_image=false
     fi
 
     if [[ ( $changed_file == ${!artifact_folder}* ) && ( "${!should_build_artifact}" != 'true' ) ]]; then
@@ -116,9 +116,9 @@ if [[ $BUILD_EVERYTHING == 'true' ]]; then
     should_push_image="${artifact}_SHOULD_PUSH_IMAGE"
 
     if [ "${!should_push_image}" != "false" ]; then
-      should_push_image="true"
+      should_push_image=true
     else
-      should_push_image="false"
+      should_push_image=false
     fi
 
     if [[ "${!should_build_artifact}" != 'true' ]]; then

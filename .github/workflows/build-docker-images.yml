@@ -1,0 +1,35 @@
+name: Build Docker Images
+on:
+  workflow_call:
+    inputs:
+      version:
+        type: string
+        required: false # true
+        description: 'Version string that should be used in image tags'
+      datetime:
+        type: string
+        required: false # true
+        description: 'Datetime of the current build'
+      matrix:
+        type: string
+        required: true
+        description: 'Build matrix generated from changed artifacts in current branch'
+      build-everything:
+        type: boolean
+        required: false # true
+        description: 'Set to true if this is a special build where all artifacts need to be built'
+defaults:
+  run:
+    shell: bash
+jobs:
+  docker_build:
+    name: Docker Build
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix: ${{ fromJson(inputs.matrix) }}
+    steps:
+      - name: Print input
+        env:
+          string: ${{ matrix.config.artifact }}
+        run: |
+          echo "$string"
