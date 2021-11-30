@@ -1,11 +1,11 @@
 package go_tests
 
 import (
+	"github.com/stretchr/testify/require"
 	"os"
 	"path"
 	"testing"
-
-	"github.com/stretchr/testify/require"
+	"time"
 )
 
 const testingShipyard = `apiVersion: "spec.keptn.sh/0.2.3"
@@ -141,6 +141,13 @@ func Test_BackupRestore(t *testing.T) {
 	t.Logf("Deleting testing project")
 	_, err = ExecuteCommandf("keptn delete project %s", keptnProjectName)
 	require.Nil(t, err)
+
+	//clientset, _ := keptnkubeutils.GetClientset(false)
+	//assert.Eventually(t, func() bool {
+	//	return wait.PollImmediate(time.Second*3, time.Minute*5, checkDeployment(clientset, serviceName, keptnProjectName+"-dev", WaitForDeploymentOptions{WithImageName: "ghcr.io/podtato-head/podtatoserver:v0.1.0"})) != nil
+	//}, time.Minute*time.Duration(10), time.Second)
+
+	time.Sleep(10 * time.Minute)
 
 	//restore Configuration Service data
 
