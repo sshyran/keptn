@@ -1,7 +1,10 @@
 package go_tests
 
 import (
+	keptnkubeutils "github.com/keptn/kubernetes-utils/pkg"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"k8s.io/apimachinery/pkg/util/wait"
 	"os"
 	"path"
 	"testing"
@@ -142,12 +145,12 @@ func Test_BackupRestore(t *testing.T) {
 	_, err = ExecuteCommandf("keptn delete project %s", keptnProjectName)
 	require.Nil(t, err)
 
-	//clientset, _ := keptnkubeutils.GetClientset(false)
-	//assert.Eventually(t, func() bool {
-	//	return wait.PollImmediate(time.Second*3, time.Minute*5, checkDeployment(clientset, serviceName, keptnProjectName+"-dev", WaitForDeploymentOptions{WithImageName: "ghcr.io/podtato-head/podtatoserver:v0.1.0"})) != nil
-	//}, time.Minute*time.Duration(10), time.Second)
+	clientset, _ := keptnkubeutils.GetClientset(false)
+	assert.Eventually(t, func() bool {
+		return wait.PollImmediate(time.Second*3, time.Minute*5, checkDeployment(clientset, serviceName, keptnProjectName+"-dev", WaitForDeploymentOptions{WithImageName: "ghcr.io/podtato-head/podtatoserver:v0.1.0"})) != nil
+	}, time.Minute*time.Duration(10), time.Second)
 
-	time.Sleep(10 * time.Minute)
+	//time.Sleep(10 * time.Minute)
 
 	//restore Configuration Service data
 
