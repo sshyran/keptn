@@ -18,7 +18,7 @@ import (
 const sequenceStateShipyard = `apiVersion: "spec.keptn.sh/0.2.0"
 kind: "Shipyard"
 metadata:
-  name: "shipyard-sockshop"
+  name: "shipyard-podtatohead"
 spec:
   stages:
     - name: "dev"
@@ -58,7 +58,7 @@ func Test_SequenceState(t *testing.T) {
 
 	uniform := []string{"lighthouse-service"}
 
-	// scale down the services that are usually involved in the sequence defined in the shipyard above.
+	t.Log("scale down the services that are usually involved in the sequence defined in the shipyard")
 	// this way we can control the events sent during this sequence and check whether the state is updated appropriately
 	if err := ScaleDownUniform(uniform); err != nil {
 		t.Errorf("scaling down uniform failed: %s", err.Error())
@@ -71,18 +71,20 @@ func Test_SequenceState(t *testing.T) {
 	}()
 
 	// check if the project 'state' is already available - if not, delete it before creating it again
-	// check if the project is already available - if not, delete it before creating it again
+	t.Log("check if the project is already available - if not, delete it before creating it again")
 	err = CreateProject(projectName, sequenceStateShipyardFilePath, true)
 	require.Nil(t, err)
 
+	t.Logf("create service %s", serviceName)
 	output, err := ExecuteCommand(fmt.Sprintf("keptn create service %s --project=%s", serviceName, projectName))
 
 	require.Nil(t, err)
 	require.Contains(t, output, "created successfully")
 
+	t.Logf("get states of project %s", projectName)
 	states, resp, err := GetState(projectName)
 
-	// send a delivery.triggered event
+	t.Logf("send a delivery.triggered event")
 	eventType := keptnv2.GetTriggeredEventType("dev.delivery")
 
 	commitID := "my-git-commit-id"
@@ -96,7 +98,7 @@ func Test_SequenceState(t *testing.T) {
 				Service: serviceName,
 			},
 			ConfigurationChange: keptnv2.ConfigurationChange{
-				Values: map[string]interface{}{"image": "carts:test"},
+				Values: map[string]interface{}{"image": "ghcr.io/podtato-head/podtatoserver:v0.1.0"},
 			},
 		},
 		ID:                 uuid.NewString(),
@@ -116,7 +118,7 @@ func Test_SequenceState(t *testing.T) {
 	require.Nil(t, err)
 	require.NotNil(t, context.KeptnContext)
 
-	// verify state
+	t.Logf("verify state")
 	require.Eventually(t, func() bool {
 		states, resp, err = GetState(projectName)
 		if err != nil {
@@ -161,7 +163,7 @@ func Test_SequenceState(t *testing.T) {
 		return true
 	}, 10*time.Second, 2*time.Second)
 
-	// get deployment.triggered event
+	t.Logf("get deployment.triggered event")
 	deploymentTriggeredEvent, err := GetLatestEventOfType(*context.KeptnContext, projectName, "dev", keptnv2.GetTriggeredEventType("delivery"))
 	require.Nil(t, err)
 	require.NotNil(t, deploymentTriggeredEvent)
@@ -172,10 +174,11 @@ func Test_SequenceState(t *testing.T) {
 
 	keptn, err := keptnv2.NewKeptn(&cloudEvent, keptncommon.KeptnOpts{EventSender: &APIEventSender{}})
 
+	t.Logf("send .started event")
 	_, err = keptn.SendTaskStartedEvent(nil, source)
 	require.Nil(t, err)
 
-	// verify state
+	t.Logf("verify state")
 	require.Eventually(t, func() bool {
 		states, resp, err = GetState(projectName)
 		if err != nil {
@@ -208,10 +211,11 @@ func Test_SequenceState(t *testing.T) {
 		return true
 	}, 10*time.Second, 2*time.Second)
 
+	t.Logf("send .finished event")
 	_, err = keptn.SendTaskFinishedEvent(nil, source)
 	require.Nil(t, err)
 
-	// verify state
+	t.Logf("verify state")
 	require.Eventually(t, func() bool {
 		states, resp, err = GetState(projectName)
 		if err != nil {
@@ -232,7 +236,7 @@ func Test_SequenceState(t *testing.T) {
 		return true
 	}, 10*time.Second, 2*time.Second)
 
-	// get evaluation.triggered event
+	t.Logf("get evaluation.triggered event")
 	evaluationTriggeredEvent, err := GetLatestEventOfType(*context.KeptnContext, projectName, "dev", keptnv2.GetTriggeredEventType(keptnv2.EvaluationTaskName))
 	require.Nil(t, err)
 	require.NotNil(t, evaluationTriggeredEvent)
@@ -244,11 +248,11 @@ func Test_SequenceState(t *testing.T) {
 	keptn, err = keptnv2.NewKeptn(&cloudEvent, keptncommon.KeptnOpts{EventSender: &APIEventSender{}})
 	require.Nil(t, err)
 
-	// send started event
+	t.Logf("send started event")
 	_, err = keptn.SendTaskStartedEvent(nil, source)
 	require.Nil(t, err)
 
-	// send finished event with score
+	t.Logf("send finished event with score")
 	_, err = keptn.SendTaskFinishedEvent(&keptnv2.EvaluationFinishedEventData{
 		EventData: keptnv2.EventData{
 			Status: keptnv2.StatusSucceeded,
@@ -260,7 +264,7 @@ func Test_SequenceState(t *testing.T) {
 	}, "lighthouse-service")
 	require.Nil(t, err)
 
-	// verify state
+	t.Logf("verify state")
 	require.Eventually(t, func() bool {
 		states, resp, err = GetState(projectName)
 		if err != nil {
@@ -310,18 +314,18 @@ func Test_SequenceState(t *testing.T) {
 	keptn, err = keptnv2.NewKeptn(&cloudEvent, keptncommon.KeptnOpts{EventSender: &APIEventSender{}})
 	require.Nil(t, err)
 
-	// send started event
+	t.Logf("send started event")
 	_, err = keptn.SendTaskStartedEvent(nil, source)
 	require.Nil(t, err)
 
-	// send finished event with result=fail
+	t.Logf("send finished event with result=fail")
 	_, err = keptn.SendTaskFinishedEvent(&keptnv2.EventData{
 		Status: keptnv2.StatusSucceeded,
 		Result: keptnv2.ResultFailed,
 	}, source)
 	require.Nil(t, err)
 
-	// verify state
+	t.Logf("verify state")
 	require.Eventually(t, func() bool {
 		states, resp, err = GetState(projectName)
 		if err != nil {
@@ -359,20 +363,24 @@ func Test_SequenceState_CannotRetrieveShipyard(t *testing.T) {
 		}
 	}()
 
+	t.Logf("create project %s", projectName)
 	err = CreateProject(projectName, sequenceStateShipyardFilePath, true)
 	require.Nil(t, err)
 
+	t.Logf("create service %s", serviceName)
 	_, err = ExecuteCommand(fmt.Sprintf("keptn create service %s --project=%s", serviceName, projectName))
 
 	require.Nil(t, err)
 
-	// delete the shipyard file
+	t.Logf("delete the shipyard file")
 	_, err = ApiDELETERequest(fmt.Sprintf("/configuration-service/v1/project/%s/resource/shipyard.yaml", projectName), 3)
 	require.Nil(t, err)
 
+	t.Logf("trigger sequence evaluation")
 	_, err = TriggerSequence(projectName, serviceName, "dev", "evaluation", nil)
 	require.Nil(t, err)
 
+	t.Logf("verify states")
 	var states *scmodels.SequenceStates
 	require.Eventually(t, func() bool {
 		states, _, err = GetState(projectName)
@@ -400,14 +408,16 @@ func Test_SequenceState_InvalidShipyard(t *testing.T) {
 		}
 	}()
 
+	t.Logf("create project %s", projectName)
 	err = CreateProject(projectName, sequenceStateShipyardFilePath, true)
 	require.Nil(t, err)
 
+	t.Logf("create service %s",serviceName)
 	_, err = ExecuteCommand(fmt.Sprintf("keptn create service %s --project=%s", serviceName, projectName))
 
 	require.Nil(t, err)
 
-	// upload a shipyard with an invalid version
+	t.Logf("upload a shipyard with an invalid version")
 	invalidShipyardString := strings.Replace(sequenceQueueShipyard, "spec.keptn.sh/0.2.2", "0.1.7", 1)
 
 	invalidShipyardFile, err := CreateTmpShipyardFile(invalidShipyardString)
@@ -419,12 +429,15 @@ func Test_SequenceState_InvalidShipyard(t *testing.T) {
 		}
 	}()
 
+	t.Logf("add resources to project %s", projectName)
 	_, err = ExecuteCommand(fmt.Sprintf("keptn add-resource --project=%s --resource=%s --resourceUri=shipyard.yaml", projectName, invalidShipyardFile))
 	require.Nil(t, err)
 
+	t.Logf("trigger sequence evaluation")
 	_, err = TriggerSequence(projectName, serviceName, "dev", "evaluation", nil)
 	require.Nil(t, err)
 
+	t.Logf("verify states")
 	var states *scmodels.SequenceStates
 	require.Eventually(t, func() bool {
 		states, _, err = GetState(projectName)
@@ -452,17 +465,20 @@ func Test_SequenceState_SequenceNotFound(t *testing.T) {
 		}
 	}()
 
+	t.Logf("create project %s", projectName)
 	err = CreateProject(projectName, sequenceStateShipyardFilePath, true)
 	require.Nil(t, err)
 
+	t.Logf("create service %s", serviceName)
 	_, err = ExecuteCommand(fmt.Sprintf("keptn create service %s --project=%s", serviceName, projectName))
 
 	require.Nil(t, err)
 
-	// start a sequence that is not known
+	t.Logf("start a sequence that is not known")
 	_, err = TriggerSequence(projectName, serviceName, "dev", "unknown", nil)
 	require.Nil(t, err)
 
+	t.Logf("verify states")
 	var states *scmodels.SequenceStates
 	require.Eventually(t, func() bool {
 		states, _, err = GetState(projectName)
@@ -489,17 +505,20 @@ func Test_SequenceState_RetrieveMultipleSequence(t *testing.T) {
 		}
 	}()
 
+	t.Logf("create project %s", projectName)
 	err = CreateProject(projectName, sequenceStateShipyardFilePath, true)
 	require.Nil(t, err)
 
+	t.Logf("create service %s", serviceName)
 	_, err = ExecuteCommand(fmt.Sprintf("keptn create service %s --project=%s", serviceName, projectName))
 
 	require.Nil(t, err)
 
-	// start the first sequence
+	t.Logf("start the first sequence")
 	context1, err := TriggerSequence(projectName, serviceName, "dev", "delivery", nil)
 	require.Nil(t, err)
 
+	t.Logf("verify states")
 	var states *scmodels.SequenceStates
 	require.Eventually(t, func() bool {
 		// filter sequences by providing the context ID
@@ -514,10 +533,11 @@ func Test_SequenceState_RetrieveMultipleSequence(t *testing.T) {
 
 	require.Equal(t, context1, states.States[0].Shkeptncontext)
 
-	// start the first sequence
+	t.Logf("start the second sequence")
 	context2, err := TriggerSequence(projectName, serviceName, "dev", "delivery", nil)
 	require.Nil(t, err)
 
+	t.Logf("verify states")
 	require.Eventually(t, func() bool {
 		// filter sequences by providing the context ID
 		states, _, err = GetStateByContext(projectName, context2)
@@ -531,7 +551,7 @@ func Test_SequenceState_RetrieveMultipleSequence(t *testing.T) {
 
 	require.Equal(t, context2, states.States[0].Shkeptncontext)
 
-	// now let's try to fetch both sequences by providing both context IDs
+	t.Logf("now let's try to fetch both sequences by providing both context IDs")
 	states, _, err = GetStateByContext(projectName, fmt.Sprintf("%s,%s", context1, context2))
 	require.Nil(t, err)
 
