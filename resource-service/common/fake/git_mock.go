@@ -23,6 +23,9 @@ import (
 // 			CreateBranchFunc: func(gitContext common_models.GitContext, branch string, sourceBranch string) error {
 // 				panic("mock out the CreateBranch method")
 // 			},
+// 			DeleteBranchFunc: func(gitContext common_models.GitContext, branch string, defaultBranch string) error {
+// 				panic("mock out the DeleteBranch method")
+// 			},
 // 			GetCurrentRevisionFunc: func(gitContext common_models.GitContext) (string, error) {
 // 				panic("mock out the GetCurrentRevision method")
 // 			},
@@ -32,7 +35,7 @@ import (
 // 			GetFileRevisionFunc: func(gitContext common_models.GitContext, revision string, file string) ([]byte, error) {
 // 				panic("mock out the GetFileRevision method")
 // 			},
-// 			MigrateProjectFunc: func(gitContext common_models.GitContext, newMetadatacontent []byte) error {
+// 			MigrateProjectFunc: func(gitContext common_models.GitContext, newMetadataContent []byte) error {
 // 				panic("mock out the MigrateProject method")
 // 			},
 // 			ProjectExistsFunc: func(gitContext common_models.GitContext) bool {
@@ -66,6 +69,9 @@ type IGitMock struct {
 	// CreateBranchFunc mocks the CreateBranch method.
 	CreateBranchFunc func(gitContext common_models.GitContext, branch string, sourceBranch string) error
 
+	// DeleteBranchFunc mocks the DeleteBranch method.
+	DeleteBranchFunc func(gitContext common_models.GitContext, branch string, defaultBranch string) error
+
 	// GetCurrentRevisionFunc mocks the GetCurrentRevision method.
 	GetCurrentRevisionFunc func(gitContext common_models.GitContext) (string, error)
 
@@ -76,7 +82,7 @@ type IGitMock struct {
 	GetFileRevisionFunc func(gitContext common_models.GitContext, revision string, file string) ([]byte, error)
 
 	// MigrateProjectFunc mocks the MigrateProject method.
-	MigrateProjectFunc func(gitContext common_models.GitContext, newMetadatacontent []byte) error
+	MigrateProjectFunc func(gitContext common_models.GitContext, newMetadataContent []byte) error
 
 	// ProjectExistsFunc mocks the ProjectExists method.
 	ProjectExistsFunc func(gitContext common_models.GitContext) bool
@@ -116,6 +122,15 @@ type IGitMock struct {
 			// SourceBranch is the sourceBranch argument value.
 			SourceBranch string
 		}
+		// DeleteBranch holds details about calls to the DeleteBranch method.
+		DeleteBranch []struct {
+			// GitContext is the gitContext argument value.
+			GitContext common_models.GitContext
+			// Branch is the branch argument value.
+			Branch string
+			// DefaultBranch is the defaultBranch argument value.
+			DefaultBranch string
+		}
 		// GetCurrentRevision holds details about calls to the GetCurrentRevision method.
 		GetCurrentRevision []struct {
 			// GitContext is the gitContext argument value.
@@ -139,8 +154,8 @@ type IGitMock struct {
 		MigrateProject []struct {
 			// GitContext is the gitContext argument value.
 			GitContext common_models.GitContext
-			// NewMetadatacontent is the newMetadatacontent argument value.
-			NewMetadatacontent []byte
+			// NewMetadataContent is the newMetadataContent argument value.
+			NewMetadataContent []byte
 		}
 		// ProjectExists holds details about calls to the ProjectExists method.
 		ProjectExists []struct {
@@ -173,6 +188,7 @@ type IGitMock struct {
 	lockCheckoutBranch     sync.RWMutex
 	lockCloneRepo          sync.RWMutex
 	lockCreateBranch       sync.RWMutex
+	lockDeleteBranch       sync.RWMutex
 	lockGetCurrentRevision sync.RWMutex
 	lockGetDefaultBranch   sync.RWMutex
 	lockGetFileRevision    sync.RWMutex
@@ -289,6 +305,45 @@ func (mock *IGitMock) CreateBranchCalls() []struct {
 	return calls
 }
 
+// DeleteBranch calls DeleteBranchFunc.
+func (mock *IGitMock) DeleteBranch(gitContext common_models.GitContext, branch string, defaultBranch string) error {
+	if mock.DeleteBranchFunc == nil {
+		panic("IGitMock.DeleteBranchFunc: method is nil but IGit.DeleteBranch was just called")
+	}
+	callInfo := struct {
+		GitContext    common_models.GitContext
+		Branch        string
+		DefaultBranch string
+	}{
+		GitContext:    gitContext,
+		Branch:        branch,
+		DefaultBranch: defaultBranch,
+	}
+	mock.lockDeleteBranch.Lock()
+	mock.calls.DeleteBranch = append(mock.calls.DeleteBranch, callInfo)
+	mock.lockDeleteBranch.Unlock()
+	return mock.DeleteBranchFunc(gitContext, branch, defaultBranch)
+}
+
+// DeleteBranchCalls gets all the calls that were made to DeleteBranch.
+// Check the length with:
+//     len(mockedIGit.DeleteBranchCalls())
+func (mock *IGitMock) DeleteBranchCalls() []struct {
+	GitContext    common_models.GitContext
+	Branch        string
+	DefaultBranch string
+} {
+	var calls []struct {
+		GitContext    common_models.GitContext
+		Branch        string
+		DefaultBranch string
+	}
+	mock.lockDeleteBranch.RLock()
+	calls = mock.calls.DeleteBranch
+	mock.lockDeleteBranch.RUnlock()
+	return calls
+}
+
 // GetCurrentRevision calls GetCurrentRevisionFunc.
 func (mock *IGitMock) GetCurrentRevision(gitContext common_models.GitContext) (string, error) {
 	if mock.GetCurrentRevisionFunc == nil {
@@ -391,21 +446,21 @@ func (mock *IGitMock) GetFileRevisionCalls() []struct {
 }
 
 // MigrateProject calls MigrateProjectFunc.
-func (mock *IGitMock) MigrateProject(gitContext common_models.GitContext, newMetadatacontent []byte) error {
+func (mock *IGitMock) MigrateProject(gitContext common_models.GitContext, newMetadataContent []byte) error {
 	if mock.MigrateProjectFunc == nil {
 		panic("IGitMock.MigrateProjectFunc: method is nil but IGit.MigrateProject was just called")
 	}
 	callInfo := struct {
 		GitContext         common_models.GitContext
-		NewMetadatacontent []byte
+		NewMetadataContent []byte
 	}{
 		GitContext:         gitContext,
-		NewMetadatacontent: newMetadatacontent,
+		NewMetadataContent: newMetadataContent,
 	}
 	mock.lockMigrateProject.Lock()
 	mock.calls.MigrateProject = append(mock.calls.MigrateProject, callInfo)
 	mock.lockMigrateProject.Unlock()
-	return mock.MigrateProjectFunc(gitContext, newMetadatacontent)
+	return mock.MigrateProjectFunc(gitContext, newMetadataContent)
 }
 
 // MigrateProjectCalls gets all the calls that were made to MigrateProject.
@@ -413,11 +468,11 @@ func (mock *IGitMock) MigrateProject(gitContext common_models.GitContext, newMet
 //     len(mockedIGit.MigrateProjectCalls())
 func (mock *IGitMock) MigrateProjectCalls() []struct {
 	GitContext         common_models.GitContext
-	NewMetadatacontent []byte
+	NewMetadataContent []byte
 } {
 	var calls []struct {
 		GitContext         common_models.GitContext
-		NewMetadatacontent []byte
+		NewMetadataContent []byte
 	}
 	mock.lockMigrateProject.RLock()
 	calls = mock.calls.MigrateProject
