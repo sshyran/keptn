@@ -1,7 +1,9 @@
 package credentialmanager
 
 import (
+	"io/ioutil"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/keptn/keptn/cli/pkg/logging"
@@ -29,33 +31,33 @@ func TestSetAndGetCreds(t *testing.T) {
 	}
 }
 
-//func TestGetCredsFromFile(t *testing.T) {
-//	MockKubeConfigCheck = true
-//	file, err := ioutil.TempFile("", "*__"+keptnContext+"__"+testNamespace)
-//	if err != nil {
-//		t.Fatal(err)
-//	}
-//	defer os.Remove(file.Name())
-//
-//	// Note that this is no real domain nor token testAPIToken is only used for testing purpose
-//	content := testEndPoint.String() + "\n" + testAPIToken
-//	_, err = file.Write([]byte(content))
-//	if err != nil {
-//		t.Fatal(err)
-//	}
-//
-//	cm := NewCredentialManager(false)
-//	tempFileName := strings.Split(file.Name(), "__")[0]
-//	cm.apiTokenFile = tempFileName
-//
-//	url, token, err := cm.GetCreds(testNamespace)
-//	if err != nil {
-//		t.Fatal(err)
-//	}
-//	if url != testEndPoint {
-//		t.Fatal("URLs do not match")
-//	}
-//	if testAPIToken != token {
-//		t.Fatal("API tokens do not match")
-//	}
-//}
+func TestGetCredsFromFile(t *testing.T) {
+	MockKubeConfigCheck = true
+	file, err := ioutil.TempFile("", "*__"+keptnContext+"__"+testNamespace)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.Remove(file.Name())
+
+	// Note that this is no real domain nor token testAPIToken is only used for testing purpose
+	content := testEndPoint.String() + "\n" + testAPIToken
+	_, err = file.Write([]byte(content))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	cm := NewCredentialManager(false)
+	tempFileName := strings.Split(file.Name(), "__")[0]
+	cm.apiTokenFile = tempFileName
+
+	url, token, err := cm.GetCreds(testNamespace)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if url != testEndPoint {
+		t.Fatal("URLs do not match")
+	}
+	if testAPIToken != token {
+		t.Fatal("API tokens do not match")
+	}
+}
