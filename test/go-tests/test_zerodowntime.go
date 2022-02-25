@@ -89,11 +89,11 @@ func Test_ZeroDownTimeTriggerSequence(t *testing.T) {
 	require.Equal(t, keptnContext, states.States[0].Shkeptncontext)
 
 	// check if the first triggered event for the sequence has been sent out
-	require.Eventually(t, func() bool {
+	require.Eventuallyf(t, func() bool {
 		triggeredEvent, err := GetLatestEventOfType(keptnContext, projectName, stageName, keptnv2.GetTriggeredEventType("delivery"))
 		if err != nil || triggeredEvent == nil {
 			return false
 		}
 		return true
-	}, 30*time.Second, 5*time.Second)
+	}, 30*time.Second, 5*time.Second, GetDiagnostics("shipyard-controller", "shipyard-controller"))
 }
