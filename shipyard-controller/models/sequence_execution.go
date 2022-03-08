@@ -3,6 +3,7 @@ package models
 import (
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/common"
+	"time"
 )
 
 // SequenceExecution contains all required information needed by the shipyard controller on how to preceed within a task sequence.
@@ -11,10 +12,11 @@ import (
 // Also, for multiple iterations of a sequence, each iteration will get a new instance.
 type SequenceExecution struct {
 	ID string `json:"_id" bson:"_id"`
-	// Sequence containts the complete sequence definition
-	Sequence keptnv2.Sequence        `json:"sequence" bson:"sequence"`
-	Status   SequenceExecutionStatus `json:"status" bson:"status"`
-	Scope    EventScope              `json:"scope" bson:"scope"`
+	// Sequence contains the complete sequence definition
+	Sequence  keptnv2.Sequence        `json:"sequence" bson:"sequence"`
+	Status    SequenceExecutionStatus `json:"status" bson:"status"`
+	Scope     EventScope              `json:"scope" bson:"scope"`
+	Timestamp time.Time               `json:"timestamp" bson:"timestamp"`
 	// InputProperties contains properties of the event which triggered the task sequence
 	InputProperties map[string]interface{} `json:"inputProperties" bson:"inputProperties"`
 }

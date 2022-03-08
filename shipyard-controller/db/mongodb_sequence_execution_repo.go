@@ -104,6 +104,10 @@ func (mdbrepo *MongoDBSequenceExecutionRepo) Upsert(item models.SequenceExecutio
 	}
 	defer cancel()
 
+	if item.Timestamp.IsZero() {
+		item.Timestamp = time.Now().UTC()
+	}
+
 	if upsertOptions != nil && upsertOptions.CheckUniqueTriggeredID {
 		existingSequence, err := mdbrepo.GetByTriggeredID(item.Scope.Project, item.Scope.TriggeredID)
 		if err != nil {

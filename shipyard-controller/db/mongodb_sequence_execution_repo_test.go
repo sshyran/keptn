@@ -29,6 +29,10 @@ func TestMongoDBTaskSequenceV2Repo_InsertAndRetrieve(t *testing.T) {
 	require.Nil(t, err)
 
 	require.Len(t, get, 1)
+	require.False(t, get[0].Timestamp.IsZero())
+
+	// we have verified that the time has been set, now set the time back to the zero value to check the other values in the next assertion
+	get[0].Timestamp = time.Time{}
 	require.Equal(t, sequence, get[0])
 
 	err = mdbrepo.Clear("my-project")
