@@ -1,6 +1,7 @@
 package go_tests
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -597,6 +598,10 @@ func Test_WebhookWithDisabledFinishedEvents(t *testing.T) {
 			return false
 		} else if len(taskFinishedEvents) != 1 {
 			t.Logf("received %d .finished events, but expected 1", len(taskFinishedEvents))
+			for _, e := range taskFinishedEvents {
+				m, _ := json.MarshalIndent(e, "", "  ")
+				t.Logf("%s", m)
+			}
 			return false
 		}
 		return true
