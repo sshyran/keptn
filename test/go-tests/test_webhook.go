@@ -3,6 +3,7 @@ package go_tests
 import (
 	"encoding/json"
 	"fmt"
+	"math/rand"
 	"net/http"
 	"os"
 	"strings"
@@ -450,7 +451,8 @@ func Test_Webhook_OverlappingSubscriptions(t *testing.T) {
 }
 
 func Test_WebhookWithDisabledFinishedEvents(t *testing.T) {
-	projectName := "webhooks-no-finish"
+	projNr := rand.Intn(100)
+	projectName := fmt.Sprintf("webhooks-no-finish-%d", projNr)
 	serviceName := "myservice"
 	stageName := "dev"
 	sequencename := "mysequence"
@@ -598,7 +600,10 @@ func Test_WebhookWithDisabledFinishedEvents(t *testing.T) {
 			return false
 		} else if len(taskFinishedEvents) != 1 {
 			t.Logf("received %d .finished events, but expected 1", len(taskFinishedEvents))
-			for _, e := range taskFinishedEvents {
+
+			allEvents, _ := GetEventTraceForContext(keptnContextID, projectName)
+
+			for _, e := range allEvents {
 				m, _ := json.MarshalIndent(e, "", "  ")
 				t.Logf("%s", m)
 			}
