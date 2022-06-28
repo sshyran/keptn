@@ -9,8 +9,9 @@ Helm Chart for the keptn jmeter-service
 
 The following table lists the configurable parameters of the Jmeter-service chart and their default values.
 
-| Parameter         | Description             | Default        |
-| ----------------- | ----------------------- | -------------- |
+| Parameter         | Description             | Default       |
+| ----------------- | ----------------------- | ------------- |
+| `nameOverride`                          | Override the name label and distributor subscription name    | `""`|
 | `global.keptn.registry` | Container registry name. Will be set at all services. | `"docker.io/keptn/"` |
 | `global.keptn.tag` | Container tag. Will be set at all services. | `""` |
 | `jmeterservice.image.registry` | Container image name | ``"${global.keptn.image.registry}/jmeter-service"` |
