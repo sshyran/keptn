@@ -38,7 +38,7 @@ RUN sed -i "s/version: develop/version: ${version}/g" /go/src/github.com/keptn/k
 
 # Build the command inside the container.
 # (You may fetch or manage dependencies here, either manually or with a tool like "godep".)
-RUN GOOS=linux go build -ldflags '-linkmode=external' $BUILDFLAGS -v cmd/api-server/main.go
+RUN GOOS=linux go build -ldflags $BUILDFLAGS -v cmd/api-server/main.go
 
 
 FROM alpine:3.16 as production

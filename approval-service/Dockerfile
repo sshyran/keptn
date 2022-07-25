@@ -36,7 +36,7 @@ RUN if [ ! -z "$debugBuild" ]; then export BUILDFLAGS='-gcflags "all=-N -l"'; fi
 
 # Build the command inside the container.
 # (You may fetch or manage dependencies here, either manually or with a tool like "godep".)
-RUN GOOS=linux go build -ldflags '-linkmode=external' $BUILDFLAGS -v -o approval-service
+RUN GOOS=linux go build -ldflags $BUILDFLAGS -v -o approval-service
 
 FROM alpine:3.16 as production
 ARG version=develop
