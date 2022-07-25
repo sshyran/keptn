@@ -1,9 +1,9 @@
 # Use the official Golang image to create a build artifact.
 # This is based on Debian and sets the GOPATH to /go.
-FROM golang:1.18.4-alpine3.16 as builder-base
+FROM --platform=$BUILDPLATFORM golang:1.18.4-alpine3.16 as builder-base
 
 # install additional dependencies
-RUN apk add --no-cache gcc libc-dev git
+RUN apk add --no-cache gcc libc-dev
 
 # Force the go compiler to use modules
 ENV GO111MODULE=on
@@ -37,8 +37,12 @@ ARG version=develop
 # `skaffold debug` sets SKAFFOLD_GO_GCFLAGS to disable compiler optimizations
 ARG SKAFFOLD_GO_GCFLAGS
 
+# Target OS and architecture to build against (set automatically)
+ARG TARGETOS
+ARG TARGETARCH
+
 # generate swagger docs
-RUN GOOS=linux swag init --parseDependency
+RUN GOOS=$TARGETOS GOARCH=$TARGETARCH swag init --parseDependency
 
 # replace github.com/alecthomas/template; with text/template in docs/docs.go
 RUN sed -i "s|github.com/alecthomas/template|text/template|g" docs/docs.go
@@ -48,10 +52,10 @@ RUN sed -i "s/version: develop/version: ${version}/g" docs/swagger.yaml
 # Build the command inside the container.
 # (You may fetch or manage dependencies here,
 # either manually or with a tool like "godep".)
-RUN GOOS=linux go build -gcflags="${SKAFFOLD_GO_GCFLAGS}" -v main.go
+RUN GOOS=$TARGETOS GOARCH=$TARGETARCH go build -gcflags="${SKAFFOLD_GO_GCFLAGS}" -v main.go
 
 # Use a Docker multi-stage build to create a lean production image.
-FROM alpine:3.16 as production
+FROM --platform=$BUILDPLATFORM alpine:3.16 as production
 ARG version=develop
 LABEL org.opencontainers.image.source="https://github.com/keptn/keptn" \
     org.opencontainers.image.url="https://keptn.sh" \
