@@ -1,6 +1,5 @@
 # Use the official Golang image to create a build artifact.
 # This is based on Debian and sets the GOPATH to /go.
-# https://hub.docker.com/_/golang
 FROM --platform=$BUILDPLATFORM golang:1.18.4-alpine3.16 as builder-base
 
 WORKDIR /go/src/github.com/keptn/keptn/helm-service
@@ -12,8 +11,6 @@ ENV GOPROXY=https://proxy.golang.org
 
 RUN apk add --no-cache gcc libc-dev
 
-# Copy `go.mod` for definitions and `go.sum` to invalidate the next layer
-# in case of a change in the dependencies
 COPY go.mod go.sum ./
 
 # Download dependencies
@@ -28,7 +25,7 @@ ENV GOTESTSUM_FORMAT=testname
 RUN go install gotest.tools/gotestsum@v1.7.0
 CMD gotestsum --no-color=false -- -race -coverprofile=coverage.txt -covermode=atomic -v ./... && mv ./coverage.txt /shared/coverage.txt
 
-FROM --platform=$BUILDPLATFORM builder-base as builder
+FROM builder-base as builder
 
 # `skaffold debug` sets SKAFFOLD_GO_GCFLAGS to disable compiler optimizations
 ARG SKAFFOLD_GO_GCFLAGS
@@ -41,8 +38,6 @@ ARG TARGETARCH
 # (You may fetch or manage dependencies here, either manually or with a tool like "godep".)
 RUN GOOS=$TARGETOS GOARCH=$TARGETARCH go build -gcflags="${SKAFFOLD_GO_GCFLAGS}" -v -o helm-service
 
-# Use a Docker multi-stage build to create a lean production image.
-# https://docs.docker.com/develop/develop-images/multistage-build/#use-multi-stage-builds
 FROM alpine:3.16 as production
 ARG version=develop
 LABEL org.opencontainers.image.source="https://github.com/keptn/keptn" \

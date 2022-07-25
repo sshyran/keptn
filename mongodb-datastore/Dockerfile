@@ -1,6 +1,6 @@
 # Use the official Golang image to create a build artifact.
 # This is based on Debian and sets the GOPATH to /go.
-FROM golang:1.18.4 as builder-base
+FROM --platform=$BUILDPLATFORM golang:1.18.4 as builder-base
 
 WORKDIR /go/src/github.com/keptn/keptn/mongodb-datastore
 
@@ -9,16 +9,13 @@ ENV GO111MODULE=on
 ENV BUILDFLAGS=""
 ENV GOPROXY=https://proxy.golang.org
 
-RUN apt-get install -y gcc libc-dev git
+RUN apt-get install -y gcc libc-dev
 
-# Copy `go.mod` for definitions and `go.sum` to invalidate the next layer
-# in case of a change in the dependencies
 COPY go.mod go.sum ./
 
 # Download dependencies
 RUN go mod download
 
-# Copy local code to the container image.
 COPY . .
 
 FROM builder-base as builder-test
@@ -31,6 +28,10 @@ FROM builder-base as builder
 ARG version=develop
 ARG debugBuild
 
+# Target OS and architecture to build against (set automatically)
+ARG TARGETOS
+ARG TARGETARCH
+
 # set buildflags for debug build
 RUN if [ ! -z "$debugBuild" ]; then export BUILDFLAGS='-gcflags "all=-N -l"'; fi
 
@@ -38,9 +39,9 @@ RUN sed -i "s/version: develop/version: ${version}/g" /go/src/github.com/keptn/k
 
 # Build the command inside the container.
 # (You may fetch or manage dependencies here, either manually or with a tool like "godep".)
-RUN cd cmd/mongodb-datastore-server && GOOS=linux go build -ldflags $BUILDFLAGS -v -o mongodb-datastore
+RUN cd cmd/mongodb-datastore-server && GOOS=$TARGETOS GOARCH=$TARGETARCH go build -ldflags $BUILDFLAGS -v -o mongodb-datastore
 
-FROM alpine:3.16 as production
+FROM --platform=$BUILDPLATFORM alpine:3.16 as production
 ARG version=develop
 LABEL org.opencontainers.image.source="https://github.com/keptn/keptn" \
     org.opencontainers.image.url="https://keptn.sh" \

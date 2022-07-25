@@ -1,9 +1,9 @@
 # Use the official Golang image to create a build artifact.
 # This is based on Debian and sets the GOPATH to /go.
-FROM golang:1.18.4 as builder-base
+FROM --platform=$BUILDPLATFORM golang:1.18.4 as builder-base
 
 # install additional dependencies
-RUN apt-get install -y gcc libc-dev git
+RUN apt-get install -y gcc libc-dev
 
 # Force the go compiler to use modules
 ENV GO111MODULE=on
@@ -15,14 +15,11 @@ RUN go install github.com/swaggo/swag/cmd/swag@v1.7.0
 
 WORKDIR /go/src/github.com/keptn/keptn/statistics-service
 
-# Copy `go.mod` for definitions and `go.sum` to invalidate the next layer
-# in case of a change in the dependencies
 COPY go.mod go.sum ./
 
 # Download dependencies
 RUN go mod download
 
-# Copy local code to the container image.
 COPY . .
 
 FROM builder-base as builder-test
@@ -38,8 +35,12 @@ ARG version=develop
 # `skaffold debug` sets SKAFFOLD_GO_GCFLAGS to disable compiler optimizations
 ARG SKAFFOLD_GO_GCFLAGS
 
+# Target OS and architecture to build against (set automatically)
+ARG TARGETOS
+ARG TARGETARCH
+
 # generate swagger docs
-RUN GOOS=linux swag init --parseDependency
+RUN GOOS=$TARGETOS swag init --parseDependency
 
 # replace github.com/alecthomas/template; with text/template in docs/docs.go
 RUN sed -i "s|github.com/alecthomas/template|text/template|g" docs/docs.go
@@ -47,12 +48,10 @@ RUN sed -i "s|github.com/alecthomas/template|text/template|g" docs/docs.go
 RUN sed -i "s/version: develop/version: ${version}/g" docs/swagger.yaml
 
 # Build the command inside the container.
-# (You may fetch or manage dependencies here,
-# either manually or with a tool like "godep".)
-RUN GOOS=linux go build -gcflags="${SKAFFOLD_GO_GCFLAGS}" -v main.go
+# (You may fetch or manage dependencies here, either manually or with a tool like "godep".)
+RUN GOOS=$TARGETOS GOARCH=$TARGETARCH go build -gcflags="${SKAFFOLD_GO_GCFLAGS}" -v main.go
 
-# Use a Docker multi-stage build to create a lean production image.
-FROM alpine:3.16 as production
+FROM --platform=$BUILDPLATFORM alpine:3.16 as production
 ARG version=develop
 LABEL org.opencontainers.image.source="https://github.com/keptn/keptn" \
     org.opencontainers.image.url="https://keptn.sh" \
