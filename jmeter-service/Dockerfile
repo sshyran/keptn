@@ -5,8 +5,6 @@ FROM golang:1.18.4-alpine3.16 as builder-base
 
 WORKDIR /go/src/github.com/keptn/keptn/jmeter-service
 
-# Force the go compiler to use modules
-ENV GO111MODULE=on
 ENV BUILDFLAGS=""
 ENV GOPROXY=https://proxy.golang.org
 

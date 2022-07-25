@@ -5,8 +5,6 @@ FROM --platform=$BUILDPLATFORM golang:1.18.4 as builder-base
 # install additional dependencies
 RUN apt-get install -y gcc libc-dev
 
-# Force the go compiler to use modules
-ENV GO111MODULE=on
 ENV BUILDFLAGS=""
 ENV GOPROXY=https://proxy.golang.org
 

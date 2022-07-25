@@ -5,8 +5,6 @@ FROM --platform=$BUILDPLATFORM golang:1.18.4-alpine3.16 as builder-base
 # install additional dependencies
 RUN apk add --no-cache gcc libc-dev
 
-# Force the go compiler to use modules
-ENV GO111MODULE=on
 ENV BUILDFLAGS=""
 ENV GOPROXY=https://proxy.golang.org
 
