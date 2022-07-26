@@ -32,14 +32,13 @@ ARG TARGETOS
 ARG TARGETARCH
 
 # set buildflags for debug build
+# set the gcflags for all packages, disable optimizations and inlining
 RUN if [ ! -z "$debugBuild" ]; then export BUILDFLAGS='-gcflags "all=-N -l"'; fi
 
 RUN sed -i "s/version: develop/version: ${version}/g" /go/src/github.com/keptn/keptn/api/swagger.yaml
 RUN sed -i "s|basePath: /v1|basePath: /api/v1 |g" /go/src/github.com/keptn/keptn/api/swagger.yaml
 
-# Build the command inside the container.
-# (You may fetch or manage dependencies here, either manually or with a tool like "godep".)
-RUN GOOS=$TARGETOS GOARCH=$TARGETARCH go build -ldflags $BUILDFLAGS -v cmd/api-server/main.go
+RUN GOOS=$TARGETOS GOARCH=$TARGETARCH go build -ldflags '-linkmode=external' $BUILDFLAGS -v cmd/api-server/main.go
 
 
 FROM --platform=$BUILDPLATFORM alpine:3.16 as production

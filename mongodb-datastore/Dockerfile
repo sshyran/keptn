@@ -34,10 +34,12 @@ ARG TARGETARCH
 RUN if [ ! -z "$debugBuild" ]; then export BUILDFLAGS='-gcflags "all=-N -l"'; fi
 
 RUN sed -i "s/version: develop/version: ${version}/g" /go/src/github.com/keptn/keptn/mongodb-datastore/swagger.yaml
+RUN sed -i "s|basePath: /|basePath: /api/mongodb-datastore |g" /go/src/github.com/keptn/keptn/mongodb-datastore/swagger.yaml
+RUN sed -i '/paths:/i securityDefinitions:\n  key:\n    type: apiKey\n    in: header\n    name: x-token\nsecurity:\n  - key: []\n' /go/src/github.com/keptn/keptn/mongodb-datastore/swagger.yaml
 
 # Build the command inside the container.
 # (You may fetch or manage dependencies here, either manually or with a tool like "godep".)
-RUN cd cmd/mongodb-datastore-server && GOOS=$TARGETOS GOARCH=$TARGETARCH go build -ldflags $BUILDFLAGS -v -o mongodb-datastore
+RUN cd cmd/mongodb-datastore-server && GOOS=$TARGETOS GOARCH=$TARGETARCH go build -ldflags '-linkmode=external' $BUILDFLAGS -v -o mongodb-datastore
 
 FROM --platform=$BUILDPLATFORM alpine:3.16 as production
 ARG version=develop
@@ -56,11 +58,7 @@ RUN apk add --no-cache ca-certificates libc6-compat
 COPY --from=builder /go/src/github.com/keptn/keptn/mongodb-datastore/cmd/mongodb-datastore-server/mongodb-datastore /mongodb-datastore
 COPY --from=builder /go/src/github.com/keptn/keptn/mongodb-datastore/swagger-ui /swagger-ui
 COPY --from=builder /go/src/github.com/keptn/keptn/mongodb-datastore/swagger.yaml /swagger-ui/swagger-original.yaml
-
 COPY --from=builder /go/src/github.com/keptn/keptn/mongodb-datastore/swagger.yaml /swagger-ui/swagger.yaml
-# Replace contents for api proxy
-RUN sed -i "s|basePath: /|basePath: /api/mongodb-datastore |g" /swagger-ui/swagger.yaml
-RUN sed -i '/paths:/i securityDefinitions:\n  key:\n    type: apiKey\n    in: header\n    name: x-token\nsecurity:\n  - key: []\n' /swagger-ui/swagger.yaml
 
 EXPOSE 8080
 

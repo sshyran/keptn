@@ -15,7 +15,6 @@ WORKDIR /go/src/github.com/keptn/keptn/statistics-service
 
 COPY go.mod go.sum ./
 
-# Download dependencies
 RUN go mod download
 
 COPY . .
@@ -38,7 +37,7 @@ ARG TARGETOS
 ARG TARGETARCH
 
 # generate swagger docs
-RUN GOOS=$TARGETOS swag init --parseDependency
+RUN GOOS=$TARGETOS GOARCH=$TARGETARCH swag init --parseDependency
 
 # replace github.com/alecthomas/template; with text/template in docs/docs.go
 RUN sed -i "s|github.com/alecthomas/template|text/template|g" docs/docs.go
@@ -47,7 +46,7 @@ RUN sed -i "s/version: develop/version: ${version}/g" docs/swagger.yaml
 
 # Build the command inside the container.
 # (You may fetch or manage dependencies here, either manually or with a tool like "godep".)
-RUN GOOS=$TARGETOS GOARCH=$TARGETARCH go build -gcflags="${SKAFFOLD_GO_GCFLAGS}" -v main.go
+RUN GOOS=$TARGETOS GOARCH=$TARGETARCH go build -ldflags '-linkmode=external' -gcflags="${SKAFFOLD_GO_GCFLAGS}" -v main.go
 
 FROM --platform=$BUILDPLATFORM alpine:3.16 as production
 ARG version=develop

@@ -13,14 +13,10 @@ RUN go install github.com/swaggo/swag/cmd/swag@v1.7.0
 
 WORKDIR /go/src/github.com/keptn/keptn/secret-service
 
-# Copy `go.mod` for definitions and `go.sum` to invalidate the next layer
-# in case of a change in the dependencies
 COPY go.mod go.sum ./
 
-# Download dependencies
 RUN go mod download
 
-# Copy local code to the container image.
 COPY . .
 
 FROM builder-base as builder-test
@@ -50,7 +46,7 @@ RUN sed -i "s/version: develop/version: ${version}/g" docs/swagger.yaml
 # Build the command inside the container.
 # (You may fetch or manage dependencies here,
 # either manually or with a tool like "godep".)
-RUN GOOS=$TARGETOS GOARCH=$TARGETARCH go build -gcflags="${SKAFFOLD_GO_GCFLAGS}" -v main.go
+RUN GOOS=$TARGETOS GOARCH=$TARGETARCH go build -ldflags '-linkmode=external' -gcflags="${SKAFFOLD_GO_GCFLAGS}" -v main.go
 
 # Use a Docker multi-stage build to create a lean production image.
 FROM --platform=$BUILDPLATFORM alpine:3.16 as production
@@ -62,7 +58,6 @@ LABEL org.opencontainers.image.source="https://github.com/keptn/keptn" \
     org.opencontainers.image.documentation="https://keptn.sh/docs/" \
     org.opencontainers.image.licenses="Apache-2.0" \
     org.opencontainers.image.version="${version}"
-
 
 ENV env=production
 

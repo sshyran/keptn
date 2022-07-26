@@ -14,7 +14,6 @@ WORKDIR /go/src/github.com/keptn/keptn/resource-service
 
 COPY go.mod go.sum ./
 
-# Download dependencies
 RUN go mod download
 
 COPY . .
@@ -31,17 +30,20 @@ ARG version=develop
 # `skaffold debug` sets SKAFFOLD_GO_GCFLAGS to disable compiler optimizations
 ARG SKAFFOLD_GO_GCFLAGS
 
+# Target OS and architecture to build against (set automatically)
+ARG TARGETOS
+ARG TARGETARCH
+
 # generate swagger docs
-RUN GOOS=$TARGETOS swag init
+RUN GOOS=$TARGETOS GOARCH=$TARGETARCH swag init
 
 # replace github.com/alecthomas/template; with text/template in docs/docs.go
 RUN sed -i "s|github.com/alecthomas/template|text/template|g" docs/docs.go
 # replace version "develop" with actual version
 RUN sed -i "s/version: develop/version: ${version}/g" docs/swagger.yaml
+RUN sed -i "s|basePath: /v1|basePath: /api/resource-service/v1 |g" /go/src/github.com/keptn/keptn/resource-service/docs/swagger.yaml
 
-# Build the command inside the container.
-# (You may fetch or manage dependencies here, either manually or with a tool like "godep".)
-RUN GOOS=$TARGETOS GOARCH=$TARGETARCH go build -gcflags="${SKAFFOLD_GO_GCFLAGS}" -v main.go
+RUN GOOS=$TARGETOS GOARCH=$TARGETARCH go build -ldflags '-linkmode=external' -gcflags="${SKAFFOLD_GO_GCFLAGS}" -v main.go
 
 FROM --platform=$BUILDPLATFORM alpine:3.16 as production
 ARG version=develop
@@ -66,8 +68,6 @@ COPY --from=builder /go/src/github.com/keptn/keptn/resource-service/main /resour
 COPY --from=builder /go/src/github.com/keptn/keptn/resource-service/swagger-ui /swagger-ui
 COPY --from=builder /go/src/github.com/keptn/keptn/resource-service/docs/swagger.yaml /swagger-ui/swagger-original.yaml
 COPY --from=builder /go/src/github.com/keptn/keptn/resource-service/docs/swagger.yaml /swagger-ui/swagger.yaml
-# Replace contents for api proxy
-RUN sed -i "s|basePath: /v1|basePath: /api/resource-service/v1 |g" /swagger-ui/swagger.yaml
 
 EXPOSE 8080
 
