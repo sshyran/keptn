@@ -36,7 +36,7 @@ ARG TARGETARCH
 # (You may fetch or manage dependencies here, either manually or with a tool like "godep".)
 RUN GOOS=$TARGETOS GOARCH=$TARGETARCH go build -ldflags '-linkmode=external' -gcflags="${SKAFFOLD_GO_GCFLAGS}" -v -o helm-service
 
-FROM --platform=$BUILDPLATFORM alpine:3.16 as production
+FROM alpine:3.16 as production
 ARG version=develop
 LABEL org.opencontainers.image.source="https://github.com/keptn/keptn" \
     org.opencontainers.image.url="https://keptn.sh" \

@@ -45,7 +45,7 @@ RUN sed -i "s|basePath: /v1|basePath: /api/resource-service/v1 |g" /go/src/githu
 
 RUN GOOS=$TARGETOS GOARCH=$TARGETARCH go build -ldflags '-linkmode=external' -gcflags="${SKAFFOLD_GO_GCFLAGS}" -v main.go
 
-FROM --platform=$BUILDPLATFORM alpine:3.16 as production
+FROM alpine:3.16 as production
 ARG version=develop
 LABEL org.opencontainers.image.source="https://github.com/keptn/keptn" \
     org.opencontainers.image.url="https://keptn.sh" \

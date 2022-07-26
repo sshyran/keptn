@@ -41,7 +41,7 @@ RUN sed -i '/paths:/i securityDefinitions:\n  key:\n    type: apiKey\n    in: he
 # (You may fetch or manage dependencies here, either manually or with a tool like "godep".)
 RUN cd cmd/mongodb-datastore-server && GOOS=$TARGETOS GOARCH=$TARGETARCH go build -ldflags '-linkmode=external' $BUILDFLAGS -v -o mongodb-datastore
 
-FROM --platform=$BUILDPLATFORM alpine:3.16 as production
+FROM alpine:3.16 as production
 ARG version=develop
 LABEL org.opencontainers.image.source="https://github.com/keptn/keptn" \
     org.opencontainers.image.url="https://keptn.sh" \

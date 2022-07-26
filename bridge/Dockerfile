@@ -57,7 +57,7 @@ RUN yarn build && \
 
 # Use a Docker multi-stage build to create a lean production image.
 # https://docs.docker.com/develop/develop-images/multistage-build/#use-multi-stage-builds
-FROM --platform=$BUILDPLATFORM node:14-alpine3.15 as production
+FROM node:14-alpine3.15 as production
 ARG version=develop
 LABEL org.opencontainers.image.source="https://github.com/keptn/keptn" \
     org.opencontainers.image.url="https://keptn.sh" \
