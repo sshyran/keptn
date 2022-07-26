@@ -24,7 +24,6 @@ RUN go install gotest.tools/gotestsum@v1.7.0
 CMD gotestsum --no-color=false -- -coverprofile=coverage.txt -covermode=atomic -v ./handlers/... ./importer/... ./utils/... && mv ./coverage.txt /shared/coverage.txt
 
 FROM builder-base as builder
-ENV CGO_ENABLED=1
 ARG version=develop
 ARG debugBuild
 
@@ -33,9 +32,8 @@ ARG TARGETOS
 ARG TARGETARCH
 ENV GOOS=$TARGETOS
 ENV GOARCH=$TARGETARCH
-ENV CC=aarch64-linux-gnu-gcc
 
-RUN if [ "$GOARCH" == *'arm'* ]; then apk add --no-cache gcc-aarch64-linux-gnu; fi
+RUN if [ "$GOARCH" == *'amd64'* ]; then export LINKERFLAGS="-ldflags '-linkmode=external'"; fi
 
 # set buildflags for debug build
 # set the gcflags for all packages, disable optimizations and inlining
@@ -44,13 +42,10 @@ RUN if [ ! -z "$debugBuild" ]; then export BUILDFLAGS='-gcflags "all=-N -l"'; fi
 RUN sed -i "s/version: develop/version: ${version}/g" /go/src/github.com/keptn/keptn/api/swagger.yaml
 RUN sed -i "s|basePath: /v1|basePath: /api/v1 |g" /go/src/github.com/keptn/keptn/api/swagger.yaml
 
-ENV CC=aarch64-linux-gnu-gcc
-RUN go env
-
-RUN go build -ldflags '-linkmode=external' $BUILDFLAGS -v cmd/api-server/main.go
+RUN go build $LINKERFLAGS $BUILDFLAGS -v cmd/api-server/main.go
 
 
-FROM --platform=$BUILDPLATFORM alpine:3.16 as production
+FROM alpine:3.16 as production
 ARG version=develop
 LABEL org.opencontainers.image.source="https://github.com/keptn/keptn" \
     org.opencontainers.image.url="https://keptn.sh" \
