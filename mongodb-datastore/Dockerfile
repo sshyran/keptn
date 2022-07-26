@@ -29,6 +29,10 @@ ARG debugBuild
 # Target OS and architecture to build against (set automatically)
 ARG TARGETOS
 ARG TARGETARCH
+ENV GOOS=$TARGETOS
+ENV GOARCH=$TARGETARCH
+
+RUN if [ "$GOARCH" == *'amd64'* ]; then export LINKERFLAGS="-ldflags '-linkmode=external'"; fi
 
 # set buildflags for debug build
 RUN if [ ! -z "$debugBuild" ]; then export BUILDFLAGS='-gcflags "all=-N -l"'; fi
@@ -39,7 +43,7 @@ RUN sed -i '/paths:/i securityDefinitions:\n  key:\n    type: apiKey\n    in: he
 
 # Build the command inside the container.
 # (You may fetch or manage dependencies here, either manually or with a tool like "godep".)
-RUN cd cmd/mongodb-datastore-server && GOOS=$TARGETOS GOARCH=$TARGETARCH go build -ldflags '-linkmode=external' $BUILDFLAGS -v -o mongodb-datastore
+RUN cd cmd/mongodb-datastore-server && go build $LINKERFLAGS $BUILDFLAGS -v -o mongodb-datastore
 
 FROM alpine:3.16 as production
 ARG version=develop

@@ -28,16 +28,19 @@ CMD gotestsum --no-color=false -- -race -coverprofile=coverage.txt -covermode=at
 FROM builder-base as builder
 ARG version=develop
 
-
 # `skaffold debug` sets SKAFFOLD_GO_GCFLAGS to disable compiler optimizations
 ARG SKAFFOLD_GO_GCFLAGS
 
 # Target OS and architecture to build against (set automatically)
 ARG TARGETOS
 ARG TARGETARCH
+ENV GOOS=$TARGETOS
+ENV GOARCH=$TARGETARCH
+
+RUN if [ "$GOARCH" == *'amd64'* ]; then export LINKERFLAGS="-ldflags '-linkmode=external'"; fi
 
 # generate swagger docs
-RUN GOOS=$TARGETOS GOARCH=$TARGETARCH swag init --parseDependency
+RUN swag init --parseDependency
 
 # replace github.com/alecthomas/template; with text/template in docs/docs.go
 RUN sed -i "s|github.com/alecthomas/template|text/template|g" docs/docs.go
@@ -46,7 +49,7 @@ RUN sed -i "s/version: develop/version: ${version}/g" docs/swagger.yaml
 
 # Build the command inside the container.
 # (You may fetch or manage dependencies here, either manually or with a tool like "godep".)
-RUN GOOS=$TARGETOS GOARCH=$TARGETARCH go build -ldflags '-linkmode=external' -gcflags="${SKAFFOLD_GO_GCFLAGS}" -v main.go
+RUN go build $LINKERFLAGS -gcflags="${SKAFFOLD_GO_GCFLAGS}" -v main.go
 
 FROM alpine:3.16 as production
 ARG version=develop
