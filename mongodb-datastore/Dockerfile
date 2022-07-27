@@ -35,9 +35,9 @@ RUN if [ "$GOARCH" == *'amd64'* ]; then export LINKERFLAGS="-ldflags '-linkmode=
 # set buildflags for debug build
 RUN if [ ! -z "$debugBuild" ]; then export BUILDFLAGS='-gcflags "all=-N -l"'; fi
 
-RUN sed -i "s/version: develop/version: ${version}/g" /go/src/github.com/keptn/keptn/mongodb-datastore/swagger.yaml
-RUN sed -i "s|basePath: /|basePath: /api/mongodb-datastore |g" /go/src/github.com/keptn/keptn/mongodb-datastore/swagger.yaml
-RUN sed -i '/paths:/i securityDefinitions:\n  key:\n    type: apiKey\n    in: header\n    name: x-token\nsecurity:\n  - key: []\n' /go/src/github.com/keptn/keptn/mongodb-datastore/swagger.yaml
+RUN sed -i "s/version: develop/version: ${version}/g" ./swagger.yaml
+RUN sed -i "s|basePath: /|basePath: /api/mongodb-datastore |g" ./swagger.yaml
+RUN sed -i '/paths:/i securityDefinitions:\n  key:\n    type: apiKey\n    in: header\n    name: x-token\nsecurity:\n  - key: []\n' ./swagger.yaml
 
 # Build the command inside the container.
 # (You may fetch or manage dependencies here, either manually or with a tool like "godep".)

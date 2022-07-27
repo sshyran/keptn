@@ -43,7 +43,7 @@ RUN swag init
 RUN sed -i "s|github.com/alecthomas/template|text/template|g" docs/docs.go
 # replace version "develop" with actual version
 RUN sed -i "s/version: develop/version: ${version}/g" docs/swagger.yaml
-RUN sed -i "s|basePath: /v1|basePath: /api/resource-service/v1 |g" /go/src/github.com/keptn/keptn/resource-service/docs/swagger.yaml
+RUN sed -i "s|basePath: /v1|basePath: /api/resource-service/v1 |g" docs/swagger.yaml
 
 RUN go build $LINKERFLAGS -gcflags="${SKAFFOLD_GO_GCFLAGS}" -v main.go
 

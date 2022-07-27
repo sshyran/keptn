@@ -37,8 +37,8 @@ RUN if [ "$GOARCH" == *'amd64'* ]; then export LINKERFLAGS="-ldflags '-linkmode=
 # set the gcflags for all packages, disable optimizations and inlining
 RUN if [ ! -z "$debugBuild" ]; then export BUILDFLAGS='-gcflags "all=-N -l"'; fi
 
-RUN sed -i "s/version: develop/version: ${version}/g" /go/src/github.com/keptn/keptn/api/swagger.yaml
-RUN sed -i "s|basePath: /v1|basePath: /api/v1 |g" /go/src/github.com/keptn/keptn/api/swagger.yaml
+RUN sed -i "s/version: develop/version: ${version}/g" swagger.yaml
+RUN sed -i "s|basePath: /v1|basePath: /api/v1 |g" swagger.yaml
 
 RUN go build $LINKERFLAGS $BUILDFLAGS -v cmd/api-server/main.go
 

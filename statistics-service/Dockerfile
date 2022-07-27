@@ -44,6 +44,7 @@ RUN swag init --parseDependency
 RUN sed -i "s|github.com/alecthomas/template|text/template|g" docs/docs.go
 # replace version "develop" with actual version
 RUN sed -i "s/version: develop/version: ${version}/g" docs/swagger.yaml
+RUN sed -i "s|basePath: /v1|basePath: /api/statistics/v1 |g" docs/swagger.yaml
 
 # Build the command inside the container.
 # (You may fetch or manage dependencies here, either manually or with a tool like "godep".)
@@ -70,7 +71,6 @@ COPY --from=builder /go/src/github.com/keptn/keptn/statistics-service/swagger-ui
 
 COPY --from=builder /go/src/github.com/keptn/keptn/statistics-service/docs/swagger.yaml /swagger-ui/swagger-original.yaml
 COPY --from=builder /go/src/github.com/keptn/keptn/statistics-service/docs/swagger.yaml /swagger-ui/swagger.yaml
-RUN sed -i "s|basePath: /v1|basePath: /api/statistics/v1 |g" /swagger-ui/swagger.yaml
 
 EXPOSE 8080
 

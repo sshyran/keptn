@@ -48,6 +48,7 @@ RUN swag init --parseDependency
 RUN sed -i "s|github.com/alecthomas/template|text/template|g" docs/docs.go
 # replace version "develop" with actual version
 RUN sed -i "s/version: develop/version: ${version}/g" docs/swagger.yaml
+RUN sed -i "s|basePath: /v1|basePath: /api/controlPlane/v1 |g" docs/swagger.yaml
 
 # Build the command inside the container.
 # (You may fetch or manage dependencies here,
@@ -65,7 +66,6 @@ LABEL org.opencontainers.image.source="https://github.com/keptn/keptn" \
     org.opencontainers.image.licenses="Apache-2.0" \
     org.opencontainers.image.version="${version}"
 
-
 ENV env=production
 
 # we need to install ca-certificates and libc6-compat for go programs to work properly
@@ -77,7 +77,6 @@ COPY --from=builder /go/src/github.com/keptn/keptn/shipyard-controller/swagger-u
 
 COPY --from=builder /go/src/github.com/keptn/keptn/shipyard-controller/docs/swagger.yaml /swagger-ui/swagger-original.yaml
 COPY --from=builder /go/src/github.com/keptn/keptn/shipyard-controller/docs/swagger.yaml /swagger-ui/swagger.yaml
-RUN sed -i "s|basePath: /v1|basePath: /api/controlPlane/v1 |g" /swagger-ui/swagger.yaml
 
 EXPOSE 8080
 
