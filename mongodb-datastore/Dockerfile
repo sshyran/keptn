@@ -1,5 +1,3 @@
-# Use the official Golang image to create a build artifact.
-# This is based on Debian and sets the GOPATH to /go.
 FROM --platform=$BUILDPLATFORM golang:1.18.4 as builder-base
 
 WORKDIR /go/src/github.com/keptn/keptn/mongodb-datastore
