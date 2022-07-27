@@ -7,7 +7,7 @@ WORKDIR /go/src/github.com/keptn/keptn/approval-service
 ENV BUILDFLAGS=""
 ENV GOPROXY=https://proxy.golang.org
 
-RUN apk add --no-cache gcc libc-dev git
+RUN apk add --no-cache gcc libc-dev
 
 # Copy `go.mod` for definitions and `go.sum` to invalidate the next layer
 # in case of a change in the dependencies
