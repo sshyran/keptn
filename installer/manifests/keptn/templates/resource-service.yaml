@@ -1,6 +1,22 @@
 apiVersion: v1
 kind: Service
 metadata:
+  name: configuration-service
+  labels: {{- include "keptn.common.labels.standard" . | nindent 4 }}
+    app.kubernetes.io/name: resource-service
+spec:
+  ports:
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP
+  selector: {{- include "keptn.common.labels.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/name: resource-service
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
   name: resource-service
   labels: {{- include "keptn.common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/name: resource-service
@@ -32,37 +48,17 @@ spec:
         app.kubernetes.io/name: resource-service
     spec:
       securityContext:
-        fsGroup: {{ .Values.resourceService.fsGroup | default 1001 }}
+        fsGroup: {{ .Values.configurationService.fsGroup | default 1001 }}
         {{- if ge .Capabilities.KubeVersion.Minor "21" }}
         seccompProfile:
           type: RuntimeDefault
         {{- end }}
       terminationGracePeriodSeconds: {{ .Values.resourceService.gracePeriod | default 60 }}
       initContainers:
-        - name: wait-for-nats
-          image: busybox:1.35.0
-          env:
-          - name: "ENDPOINT"
-            value: "keptn-nats"
-          command: ['sh', '-c', 'until nslookup $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
-        - name: wait-for-keptn-mongo
-          image: busybox:1.35.0
-          env:
-          - name: "ENDPOINT"
-            value: "keptn-mongo"
-          command: ['sh', '-c', 'until nslookup $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
-        - name: wait-for-mongodb-datastore
-          image: busybox:1.35.0
-          env:
-          - name: "ENDPOINT"
-            value: "mongodb-datastore"
-          command: ['sh', '-c', 'until nslookup $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
-        - name: wait-for-shipyard-controller
-          image: busybox:1.35.0
-          env:
-          - name: "ENDPOINT"
-            value: "shipyard-controller"
-          command: ['sh', '-c', 'until nslookup $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
+        {{- include "keptn.initContainers.wait-for-nats" . | nindent 8 }}
+        {{- include "keptn.initContainers.wait-for-keptn-mongo" . | nindent 8 }}
+        {{- include "keptn.initContainers.wait-for-mongodb-datastore" . | nindent 8 }}
+        {{- include "keptn.initContainers.wait-for-shipyard-controller" . | nindent 8 }}
       containers:
         - name: resource-service
           image: {{ include "keptn.common.images.image" ( dict "imageRoot" .Values.resourceService.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) | quote }}
@@ -101,7 +97,7 @@ spec:
               name: resource-volume
           securityContext:
             runAsNonRoot: true
-            runAsUser: {{ .Values.resourceService.fsGroup | default 1001 }}
+            runAsUser: {{ .Values.configurationService.fsGroup | default 1001 }}
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
             privileged: false
